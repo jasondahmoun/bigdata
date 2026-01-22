@@ -46,10 +46,8 @@ agg = parsed.groupBy().agg(
 print("\n=== Agrégation Météo ===")
 agg.show(truncate=False)
 
-# Sauvegarder dans HDFS avec l'API Spark native
 hdfs_path = f"hdfs://{HDFS_NAMENODE}/weather_data/aggregation"
 
-# Sauvegarder en CSV (mode overwrite pour écraser les anciennes données)
 agg.coalesce(1).write.mode("overwrite").option("header", "true").csv(hdfs_path)
 
 print(f"\n✅ Données sauvegardées dans HDFS: {hdfs_path}")
