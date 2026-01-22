@@ -101,13 +101,42 @@ services:
       KAFKA_BROKER: ${KAFKA_BROKER}
       KAFKA_TOPIC: ${KAFKA_TOPIC}
       SPARK_MASTER: "spark://spark-master:7077"
+      HDFS_NAMENODE: "hdfs-namenode:9000"
     depends_on:
       - spark-master
       - spark-worker
       - kafka
+      - hdfs-namenode
     networks:
       - bigdata-network
     command: tail -f /dev/null
+
+  hdfs-namenode:
+    image: bde2020/hadoop-namenode:2.0.0-hadoop3.2.1-java8
+    container_name: hdfs-namenode
+    ports:
+      - "9870:9870"
+      - "9000:9000"
+    volumes:
+      - ./hdfs/namenode:/hadoop/dfs/name
+    environment:
+      CLUSTER_NAME: bigdata
+      CORE_CONF_fs_defaultFS: hdfs://hdfs-namenode:9000
+    networks:
+      - bigdata-network
+
+  hdfs-datanode:
+    image: bde2020/hadoop-datanode:2.0.0-hadoop3.2.1-java8
+    container_name: hdfs-datanode
+    depends_on:
+      - hdfs-namenode
+    volumes:
+      - ./hdfs/datanode:/hadoop/dfs/data
+    environment:
+      SERVICE_PRECONDITION: "hdfs-namenode:9870"
+      CORE_CONF_fs_defaultFS: hdfs://hdfs-namenode:9000
+    networks:
+      - bigdata-network
 
 networks:
   bigdata-network:
