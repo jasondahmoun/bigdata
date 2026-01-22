@@ -1,4 +1,4 @@
-.PHONY: help start stop logs producer consumer clean
+.PHONY: help start stop logs producer consumer spark clean
 
 help:
 	@echo "=== Commandes disponibles ==="
@@ -7,6 +7,7 @@ help:
 	@echo "  make logs      - Voir les logs"
 	@echo "  make producer  - Lancer le producer météo"
 	@echo "  make consumer  - Voir les messages Kafka"
+	@echo "  make spark     - Lancer l'agrégation Spark"
 	@echo "  make clean     - Tout supprimer"
 
 start:
@@ -27,6 +28,12 @@ consumer:
 		--bootstrap-server localhost:9092 \
 		--topic weather_data \
 		--from-beginning
+
+spark:
+	docker exec -it spark-submit spark-submit \
+		--master spark://spark-master:7077 \
+		--packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.0 \
+		/app/spark_weather_aggregation.py
 
 clean:
 	docker-compose down -v
