@@ -138,6 +138,33 @@ services:
     networks:
       - bigdata-network
 
+  airflow:
+    image: apache/airflow:2.8.0-python3.11
+    container_name: airflow
+    ports:
+      - "8081:8080"
+    volumes:
+      - ./airflow/dags:/opt/airflow/dags
+      - ./airflow/logs:/opt/airflow/logs
+      - ./airflow/plugins:/opt/airflow/plugins
+      - ./airflow/requirements.txt:/requirements.txt
+      - ./airflow/entrypoint.sh:/entrypoint.sh
+    environment:
+      AIRFLOW__CORE__EXECUTOR: SequentialExecutor
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: sqlite:////opt/airflow/airflow.db
+      AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+      AIRFLOW__WEBSERVER__EXPOSE_CONFIG: "true"
+      KAFKA_BROKER: ${KAFKA_BROKER}
+      KAFKA_TOPIC: ${KAFKA_TOPIC}
+      HDFS_NAMENODE: ${HDFS_NAMENODE}
+    depends_on:
+      - kafka
+      - hdfs-namenode
+      - hdfs-datanode
+    networks:
+      - bigdata-network
+    entrypoint: /bin/bash /entrypoint.sh
+
 networks:
   bigdata-network:
     driver: bridge
